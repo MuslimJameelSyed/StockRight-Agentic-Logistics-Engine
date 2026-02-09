@@ -1,6 +1,5 @@
 """
 Warehouse Putaway Recommendation - Streamlit App
-Modernized UI (dark theme) — logic unchanged
 """
 
 import streamlit as st
@@ -21,10 +20,6 @@ from error_handler import (
 )
 
 logger = logging.getLogger(__name__)
-
-# ────────────────────────────────────────────────────────────────────────────
-#   CACHED CONNECTIONS (unchanged)
-# ────────────────────────────────────────────────────────────────────────────
 
 @st.cache_resource
 def get_qdrant():
@@ -61,10 +56,6 @@ def get_gemini_model():
         st.error(f"AI service unavailable: {str(e)}")
         return None
 
-# ────────────────────────────────────────────────────────────────────────────
-#   HELPERS (unchanged)
-# ────────────────────────────────────────────────────────────────────────────
-
 def is_valid_location(location_code):
     if not location_code: return False
     if location_code.startswith(("FLOOR", "REC", "ORD")): return False
@@ -100,10 +91,6 @@ def call_gemini(model, prompt):
     except Exception:
         pass
     return None
-
-# ────────────────────────────────────────────────────────────────────────────
-#   CORE LOGIC — completely unchanged from your original
-# ────────────────────────────────────────────────────────────────────────────
 
 def get_recommendation(part_id: int):
     qdrant = get_qdrant()
@@ -240,17 +227,12 @@ def get_recommendation(part_id: int):
         "ai_summary": ai_text,
     }
 
-# ────────────────────────────────────────────────────────────────────────────
-#   MODERN DARK THEME UI
-# ────────────────────────────────────────────────────────────────────────────
-
 st.set_page_config(
     page_title="Putaway Recommendation",
     page_icon="📦",
     layout="wide",
 )
 
-# Dark industrial / logistics style
 st.markdown("""
 <style>
     :root {
@@ -339,7 +321,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ── Header ────────────────────────────────────────────────────────────────
 st.markdown("""
 <div style="text-align: center; padding: 2.2rem 0 1.4rem;">
     <h1 style="margin:0; font-size: 2.9rem;">📦 Putaway Recommendation</h1>
@@ -349,7 +330,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ── Search ────────────────────────────────────────────────────────────────
 st.markdown("### Enter Part ID")
 c1, c2 = st.columns([5, 2])
 
@@ -374,14 +354,12 @@ with c2:
             st.error(f"Error: {str(e)}")
             logger.exception("Recommendation failed")
 
-# ── Display result ────────────────────────────────────────────────────────
 if 'result' in st.session_state and st.session_state.result:
     res = st.session_state.result
 
     if "error" in res:
         st.error(res["error"])
     else:
-        # Part info
         st.markdown("### Part Details")
         cols = st.columns(4)
         cols[0].metric("Part ID", f"#{res['part_id']}")
@@ -401,7 +379,6 @@ if 'result' in st.session_state and st.session_state.result:
             rec = res["recommended"]
             tot = res["total_putaways"]
 
-            # ── Main recommendation ──────────────────────────────────────
             st.markdown(f"""
             <div class="recommendation-box">
                 <h2 style="margin-top:0;">Recommended Location</h2>
@@ -432,7 +409,6 @@ if 'result' in st.session_state and st.session_state.result:
             </div>
             """, unsafe_allow_html=True)
 
-            # Alternatives
             if res["alternatives"]:
                 st.markdown("### Alternative Free Locations")
                 alt_rows = [
@@ -459,7 +435,6 @@ if 'result' in st.session_state and st.session_state.result:
 
             st.divider()
 
-            # ── Manual override ──────────────────────────────────────────
             st.subheader("Manual Override")
             c1, c2 = st.columns([3, 2])
             with c1:
