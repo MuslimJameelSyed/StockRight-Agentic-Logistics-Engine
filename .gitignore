@@ -59,10 +59,30 @@ logs/audit.log
 *.db
 *.sqlite
 
-# Validation outputs (can be regenerated)
+# Development/Testing files
+validate_recommendations.py
 validation_results.csv
 validation_report.pdf
 verification_table.csv
+query_qdrant_simple.py
+
+# Extra documentation
+APP_IMPROVEMENTS.md
+GIT_GUIDE.md
+KNOWLEDGE_BASE_DATA_EXPLANATION.md
+docs/
+
+# Alternative implementations
+warehouse_chat.py
+warehouse_chat_cloud_sql.py
+warehouse_chat_local.py
+warehouse_chat_qdrant.py
+warehouse_chat_qdrant_enhanced.py
+putaway_recommendation_system.py
+
+# Setup scripts
+grant_all_access.py
+setup_cloud_sql_access.py
 
 # Temporary files
 tmp/
