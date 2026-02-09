@@ -1,5 +1,15 @@
 # Environment variables (IMPORTANT - contains API keys)
 .env
+.env.local
+.env.*.local
+.env.proxy
+
+# Credentials and sensitive data
+credentials.json
+*.pem
+*.key
+*.crt
+grant_permissions.sql
 
 # Python
 __pycache__/
@@ -59,3 +69,5 @@ tmp/
 temp/
 *.tmp
 _charts_tmp/
+~$*.pdf
+~$*.docx

@@ -120,15 +120,37 @@ def generate_llm_explanation(recommendation_data):
     Returns:
         String with LLM-generated explanation
     """
+    usage_pct = recommendation_data['usage_percentage']
+    usage_count = recommendation_data['usage_count']
+    location = recommendation_data['recommended_location']
+
+    # Smart prompt based on usage frequency
+    if usage_pct >= 50:
+        # High confidence - majority of times
+        emphasis = "most preferred location"
+        detail = f"used for majority ({usage_pct:.1f}%) of putaways"
+    elif usage_pct >= 20:
+        # Good confidence - frequently used
+        emphasis = "frequently used location"
+        detail = f"commonly used ({usage_pct:.1f}% of times)"
+    elif usage_count >= 5:
+        # Moderate confidence - used multiple times
+        emphasis = "historically used location"
+        detail = f"previously used multiple times"
+    else:
+        # Low confidence - minimal history
+        emphasis = "available location from historical patterns"
+        detail = "based on available historical data"
+
     prompt = (
         f"You are a warehouse management assistant. "
         f"Part '{recommendation_data['part_code']}' for client '{recommendation_data['client_name']}' needs to be stored in the warehouse. "
-        f"IMPORTANT: This part was previously stored in location '{recommendation_data['recommended_location']}' {recommendation_data['usage_count']} times "
-        f"out of {recommendation_data['total_putaways']} total putaways ({recommendation_data['usage_percentage']:.1f}% of all times). "
-        f"This location is currently FREE and available. "
-        f"\n\nWrite a clear recommendation in 1-2 sentences that emphasizes: "
-        f"'This part was historically put in {recommendation_data['recommended_location']} [X times], so this is the best location to put it now.' "
-        f"Keep it simple and direct."
+        f"Location '{location}' is the {emphasis} for this part ({detail}) and is currently FREE and available for immediate use. "
+        f"\n\nWrite a clear, confident recommendation in 1-2 sentences that: "
+        f"1. States that location {location} is recommended "
+        f"2. Emphasizes it is FREE and ready to use RIGHT NOW "
+        f"3. Mentions it follows historical patterns (without stating exact numbers) "
+        f"Keep it professional and direct."
     )
 
     try:
@@ -145,10 +167,18 @@ def generate_llm_explanation(recommendation_data):
             if candidate.content and candidate.content.parts:
                 return candidate.content.parts[0].text
 
-        return f"""This part was historically stored in location {recommendation_data['recommended_location']} {recommendation_data['usage_count']} times ({recommendation_data['usage_percentage']:.1f}%), so this is the best location to put it. The location is currently FREE and ready for use."""
+        # Fallback based on confidence
+        if usage_pct >= 30:
+            return f"Location {location} is recommended as it follows the established pattern for this part. The location is currently FREE and ready for immediate use."
+        else:
+            return f"Location {location} is recommended based on historical usage patterns. The location is currently FREE and available for use."
 
     except Exception as e:
-        return f"""This part was historically stored in location {recommendation_data['recommended_location']} {recommendation_data['usage_count']} times ({recommendation_data['usage_percentage']:.1f}%), so this is the best location to put it. The location is currently FREE and ready for use."""
+        # Fallback based on confidence
+        if usage_pct >= 30:
+            return f"Location {location} is recommended as it follows the established pattern for this part. The location is currently FREE and ready for immediate use."
+        else:
+            return f"Location {location} is recommended based on historical usage patterns. The location is currently FREE and available for use."
 
 
 def generate_no_pattern_explanation(part_info):
