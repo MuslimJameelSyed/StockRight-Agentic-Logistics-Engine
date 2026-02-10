@@ -1,13 +1,13 @@
-# Warehouse Putaway Recommendation System
+# Warehouse Putaway Recommendation System (API-Based)
 
-🏭 **Production-Ready** AI-powered warehouse putaway recommendations using historical patterns and real-time data.
+🏭 **Production-Ready** API-based warehouse putaway system powered by Cloud SQL, Qdrant Vector DB, and Google Gemini AI.
 
 ## System Overview
 
-This system recommends optimal storage locations for incoming warehouse inventory using:
-- **Qdrant** - Vector database for historical putaway patterns
-- **Google Cloud SQL (MySQL)** - Real-time location availability
-- **Google Gemini AI** - Natural language explanations
+This API-based system recommends optimal storage locations for incoming warehouse inventory using:
+- **Qdrant Cloud API** - Vector database for historical putaway patterns
+- **Google Cloud SQL API** - Real-time location availability via MySQL
+- **Google Gemini API** - AI-powered natural language explanations
 
 **Production Features:**
 - ✅ Secure credential management (environment variables)

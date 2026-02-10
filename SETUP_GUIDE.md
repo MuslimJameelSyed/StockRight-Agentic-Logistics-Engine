@@ -1,6 +1,6 @@
-# Warehouse Putaway System - Setup Guide
+# Warehouse Putaway System - Setup Guide (API-Based)
 
-Complete step-by-step instructions to run the Warehouse Putaway Recommendation System.
+Complete step-by-step instructions to run the API-based Warehouse Putaway Recommendation System.
 
 ---
 
@@ -132,11 +132,11 @@ The system displays:
 
 ---
 
-## 📊 System Components
+## 📊 System Components (API-Based Architecture)
 
-1. **Qdrant** - Stores historical putaway patterns
-2. **Cloud SQL** - Real-time location availability
-3. **Gemini AI** - Generates natural language recommendations
+1. **Qdrant Cloud API** - Stores and retrieves historical putaway patterns via REST API
+2. **Google Cloud SQL API** - Real-time location availability via MySQL API
+3. **Google Gemini API** - Generates natural language recommendations via AI API
 
 **How it works:**
 1. User enters Part ID
