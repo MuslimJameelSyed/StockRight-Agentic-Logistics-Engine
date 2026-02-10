@@ -13,7 +13,6 @@ This API-based system recommends optimal storage locations for incoming warehous
 - ✅ Secure credential management (environment variables)
 - ✅ Comprehensive error handling with retry logic
 - ✅ Complete audit trail for compliance
-- ✅ 100% validated accuracy (200 parts tested)
 - ✅ Professional web interface
 
 ## Core Applications
@@ -85,7 +84,6 @@ You can override defaults using a `.env` file.
 ✓ **Reliable:** Automatic retry logic for transient failures
 ✓ **Auditable:** Complete logging of all recommendations and overrides
 ✓ **Error Handling:** User-friendly error messages, graceful degradation
-✓ **Validated:** 100% accuracy proven with 200-part test suite
 
 ## Example Usage
 
@@ -115,27 +113,19 @@ User Request → Qdrant (historical data) → Cloud SQL (availability) → Gemin
 ## Files
 
 ### Core Application
-- `app.py` - Streamlit web interface (production-ready)
+- `app.py` - Streamlit web interface
 - `warehouse_chat_qdrant_llm.py` - CLI interface
-- `config.py` - Configuration management with validation
+- `config.py` - Configuration management
 - `error_handler.py` - Error handling and audit logging
 - `requirements.txt` - Python dependencies
 
-### Validation & Testing
-- `validate_recommendations.py` - System validation (generates PDF report)
-- `validation_results.csv` - Latest validation data
-- `validation_report.pdf` - Client-ready accuracy report
+### Configuration
+- `.env.example` - Environment variables template
+- `.gitignore` - Git ignore rules
 
 ### Documentation
-- `README.md` - This file
-- `PRODUCTION_READY.md` - Complete production readiness report
-- `DEPLOYMENT_CHECKLIST.md` - Step-by-step deployment guide
-- `WHATS_NEW.md` - Summary of production upgrades
-- `APP_IMPROVEMENTS.md` - UI enhancement details
-- `AI_REASONING_IMPROVEMENTS.md` - AI prompt improvements
-
-### Logs
-- `logs/audit.log` - Complete audit trail (JSON format)
+- `README.md` - System overview and usage
+- `SETUP_GUIDE.md` - Step-by-step installation guide
 
 ---
 
@@ -184,12 +174,3 @@ All system events are logged to `logs/audit.log` in JSON format:
    ```
 
 ---
-
-**Status:** ✅ **PRODUCTION-READY**
-
-- 🔒 Secure (no hardcoded credentials)
-- 🛡️ Reliable (error handling + retry logic)
-- 📊 Auditable (complete logging)
-- ✅ Validated (100% accuracy)
-- 🎨 Professional UI
-
