@@ -33,15 +33,36 @@ def get_qdrant():
         raise QdrantConnectionError(f"Could not connect to Qdrant: {str(e)}")
 
 @st.cache_resource
-def get_db():
+def get_db_pool():
+    """Create a connection pool instead of a single connection"""
     try:
-        logger.info("Initializing Cloud SQL connection...")
-        db = mysql.connector.connect(**config.get_db_config())
-        logger.info("Cloud SQL connection established")
-        return db
+        logger.info("Initializing Cloud SQL connection pool...")
+        from mysql.connector import pooling
+
+        db_config = config.get_db_config()
+        pool = pooling.MySQLConnectionPool(
+            pool_name="streamlit_pool",
+            pool_size=5,
+            pool_reset_session=True,
+            **db_config
+        )
+        logger.info("Cloud SQL connection pool established")
+        return pool
     except Exception as e:
-        logger.error(f"Failed to connect to Cloud SQL: {str(e)}")
-        raise DatabaseConnectionError(f"Could not connect to database: {str(e)}")
+        logger.error(f"Failed to create connection pool: {str(e)}")
+        raise DatabaseConnectionError(f"Could not create database pool: {str(e)}")
+
+def get_db_connection():
+    """Get a fresh connection from the pool with automatic retry"""
+    pool = get_db_pool()
+    try:
+        conn = pool.get_connection()
+        if not conn.is_connected():
+            conn.reconnect(attempts=3, delay=1)
+        return conn
+    except Exception as e:
+        logger.error(f"Failed to get connection from pool: {str(e)}")
+        raise DatabaseConnectionError(f"Could not get database connection: {str(e)}")
 
 @st.cache_resource
 def get_gemini_model():
@@ -94,138 +115,142 @@ def call_gemini(model, prompt):
 
 def get_recommendation(part_id: int):
     qdrant = get_qdrant()
-    db = get_db()
     model = get_gemini_model()
 
-    if not db.is_connected():
-        db.reconnect()
+    # Get a fresh connection from the pool
+    db = get_db_connection()
+    cursor = None
 
-    cursor = db.cursor()
+    try:
+        cursor = db.cursor()
 
-    cursor.execute("SELECT id, code, description, clientId FROM part WHERE id = %s", (part_id,))
-    row = cursor.fetchone()
-    if not row:
-        cursor.close()
-        return {"error": f"Part {part_id} not found in database."}
+        cursor.execute("SELECT id, code, description, clientId FROM part WHERE id = %s", (part_id,))
+        row = cursor.fetchone()
+        if not row:
+            return {"error": f"Part {part_id} not found in database."}
 
-    _, part_code, description, client_id = row
+        _, part_code, description, client_id = row
 
-    cursor.execute("SELECT name FROM client WHERE id = %s", (client_id,))
-    client_row = cursor.fetchone()
-    client_name = client_row[0] if client_row else f"Client {client_id}"
+        cursor.execute("SELECT name FROM client WHERE id = %s", (client_id,))
+        client_row = cursor.fetchone()
+        client_name = client_row[0] if client_row else f"Client {client_id}"
 
-    part_info = {
-        "part_id": part_id,
-        "part_code": part_code,
-        "description": description or "N/A",
-        "client_name": client_name,
-        "client_id": client_id,
-    }
-
-    qdrant_data = get_part_from_qdrant(qdrant, part_id)
-
-    if not qdrant_data or not qdrant_data.get("all_locations"):
-        zone = qdrant_data.get("primary_zone") if qdrant_data else None
-        zone_text = f"Zone {zone}" if zone else "any available zone"
-        cursor.close()
-        return {
-            **part_info,
-            "status": "no_history",
-            "ai_summary": (
-                f"This part has no historical putaway data. "
-                f"Consult your supervisor — consider placing it in {zone_text}."
-            ),
+        part_info = {
+            "part_id": part_id,
+            "part_code": part_code,
+            "description": description or "N/A",
+            "client_name": client_name,
+            "client_id": client_id,
         }
 
-    locations = qdrant_data["all_locations"]
-    available = []
-    for loc in locations:
-        code = loc.get("code")
-        if not is_valid_location(code):
-            continue
-        if check_location_availability(code, cursor) == "FREE":
-            available.append(
-                {"code": code, "count": loc.get("count", 0), "percentage": loc.get("percentage", 0)}
+        qdrant_data = get_part_from_qdrant(qdrant, part_id)
+
+        if not qdrant_data or not qdrant_data.get("all_locations"):
+            zone = qdrant_data.get("primary_zone") if qdrant_data else None
+            zone_text = f"Zone {zone}" if zone else "any available zone"
+            return {
+                **part_info,
+                "status": "no_history",
+                "ai_summary": (
+                    f"This part has no historical putaway data. "
+                    f"Consult your supervisor — consider placing it in {zone_text}."
+                ),
+            }
+
+        locations = qdrant_data["all_locations"]
+        available = []
+        for loc in locations:
+            code = loc.get("code")
+            if not is_valid_location(code):
+                continue
+            if check_location_availability(code, cursor) == "FREE":
+                available.append(
+                    {"code": code, "count": loc.get("count", 0), "percentage": loc.get("percentage", 0)}
+                )
+
+        available.sort(key=lambda x: -x["count"])
+        total_putaways = qdrant_data.get("total_putaways", 0)
+
+        if not available:
+            zone = qdrant_data.get("primary_zone", "Unknown")
+            prompt = (
+                f"You are a warehouse management assistant. "
+                f"All previously used warehouse shelf locations for part '{part_code}' ({description}) "
+                f"belonging to client '{client_name}' are currently occupied. The preferred warehouse zone is {zone}. "
+                f"In one sentence, advise the warehouse operator what to do next."
             )
+            ai_text = call_gemini(model, prompt) or (
+                f"All historical locations are occupied — consult your supervisor "
+                f"and look for a free location in Zone {zone}."
+            )
+            return {**part_info, "status": "all_occupied", "ai_summary": ai_text, "zone": zone}
 
-    available.sort(key=lambda x: -x["count"])
-    total_putaways = qdrant_data.get("total_putaways", 0)
-    cursor.close()
+        best = available[0]
 
-    if not available:
-        zone = qdrant_data.get("primary_zone", "Unknown")
+        if best['percentage'] >= 50:
+            emphasis = "most preferred location"
+            detail = f"used for majority ({best['percentage']:.1f}%) of putaways"
+        elif best['percentage'] >= 20:
+            emphasis = "frequently used location"
+            detail = f"commonly used ({best['percentage']:.1f}% of times)"
+        elif best['count'] >= 5:
+            emphasis = "historically used location"
+            detail = f"previously used multiple times"
+        else:
+            emphasis = "available location from historical patterns"
+            detail = "based on available historical data"
+
         prompt = (
             f"You are a warehouse management assistant. "
-            f"All previously used warehouse shelf locations for part '{part_code}' ({description}) "
-            f"belonging to client '{client_name}' are currently occupied. The preferred warehouse zone is {zone}. "
-            f"In one sentence, advise the warehouse operator what to do next."
-        )
-        ai_text = call_gemini(model, prompt) or (
-            f"All historical locations are occupied — consult your supervisor "
-            f"and look for a free location in Zone {zone}."
-        )
-        return {**part_info, "status": "all_occupied", "ai_summary": ai_text, "zone": zone}
-
-    best = available[0]
-
-    if best['percentage'] >= 50:
-        emphasis = "most preferred location"
-        detail = f"used for majority ({best['percentage']:.1f}%) of putaways"
-    elif best['percentage'] >= 20:
-        emphasis = "frequently used location"
-        detail = f"commonly used ({best['percentage']:.1f}% of times)"
-    elif best['count'] >= 5:
-        emphasis = "historically used location"
-        detail = f"previously used multiple times"
-    else:
-        emphasis = "available location from historical patterns"
-        detail = "based on available historical data"
-
-    prompt = (
-        f"You are a warehouse management assistant. "
-        f"Part '{part_code}' for client '{client_name}' needs to be stored in the warehouse. "
-        f"Location '{best['code']}' is the {emphasis} for this part ({detail}) and is currently FREE and available for immediate use. "
-        f"\n\nWrite a clear, confident recommendation in 1-2 sentences that: "
-        f"1. States that location {best['code']} is recommended "
-        f"2. Emphasizes it is FREE and ready to use RIGHT NOW "
-        f"3. Mentions it follows historical patterns (without stating exact numbers) "
-        f"Keep it professional and direct."
-    )
-
-    if best['percentage'] >= 30:
-        fallback = (
-            f"Location {best['code']} is recommended as it follows the established pattern for this part. "
-            f"The location is currently FREE and ready for immediate use."
-        )
-    else:
-        fallback = (
-            f"Location {best['code']} is recommended based on historical usage patterns. "
-            f"The location is currently FREE and available for use."
+            f"Part '{part_code}' for client '{client_name}' needs to be stored in the warehouse. "
+            f"Location '{best['code']}' is the {emphasis} for this part ({detail}) and is currently FREE and available for immediate use. "
+            f"\n\nWrite a clear, confident recommendation in 1-2 sentences that: "
+            f"1. States that location {best['code']} is recommended "
+            f"2. Emphasizes it is FREE and ready to use RIGHT NOW "
+            f"3. Mentions it follows historical patterns (without stating exact numbers) "
+            f"Keep it professional and direct."
         )
 
-    ai_text = call_gemini(model, prompt) or fallback
+        if best['percentage'] >= 30:
+            fallback = (
+                f"Location {best['code']} is recommended as it follows the established pattern for this part. "
+                f"The location is currently FREE and ready for immediate use."
+            )
+        else:
+            fallback = (
+                f"Location {best['code']} is recommended based on historical usage patterns. "
+                f"The location is currently FREE and available for use."
+            )
 
-    audit_logger.log_recommendation(
-        part_id=part_id,
-        part_code=part_code,
-        recommended_location=best['code'],
-        status="FREE",
-        usage_count=best['count'],
-        usage_percentage=best['percentage'],
-        alternatives=[a['code'] for a in available[1:4]]
-    )
+        ai_text = call_gemini(model, prompt) or fallback
 
-    logger.info(f"Recommendation generated for Part {part_code}: {best['code']}")
+        audit_logger.log_recommendation(
+            part_id=part_id,
+            part_code=part_code,
+            recommended_location=best['code'],
+            status="FREE",
+            usage_count=best['count'],
+            usage_percentage=best['percentage'],
+            alternatives=[a['code'] for a in available[1:4]]
+        )
 
-    return {
-        **part_info,
-        "status": "ok",
-        "recommended": best,
-        "alternatives": available[1:4],
-        "all_available": available,
-        "total_putaways": total_putaways,
-        "ai_summary": ai_text,
-    }
+        logger.info(f"Recommendation generated for Part {part_code}: {best['code']}")
+
+        return {
+            **part_info,
+            "status": "ok",
+            "recommended": best,
+            "alternatives": available[1:4],
+            "all_available": available,
+            "total_putaways": total_putaways,
+            "ai_summary": ai_text,
+        }
+    finally:
+        # Always close cursor and connection
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
 
 st.set_page_config(
     page_title="Putaway Recommendation",
