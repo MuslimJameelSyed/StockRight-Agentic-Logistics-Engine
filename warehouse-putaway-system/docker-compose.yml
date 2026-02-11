@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  # Local MySQL Database (replaces Cloud SQL)
+  mysql:
+    image: mysql:8.0
+    container_name: warehouse-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-warehouse_root_2024}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-mydatabase_gdpr}
+      MYSQL_USER: ${MYSQL_USER:-muslim}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-warehouse_pass_2024}
+    ports:
+      - "3307:3306"  # Use port 3307 to avoid conflict with local MySQL
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./data:/docker-entrypoint-initdb.d  # Auto-import SQL dumps on first run
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Local Ollama LLM Server (replaces Google Gemini)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: warehouse-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  mysql_data:
+    driver: local
+  ollama_data:
+    driver: local
+
+networks:
+  default:
+    name: warehouse-network
