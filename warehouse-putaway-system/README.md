@@ -20,18 +20,12 @@ This system recommends optimal warehouse locations for storing parts by analyzin
 
 ## System Requirements
 
-**Minimum Configuration:**
-- **RAM**: 4GB (8GB recommended)
-- **Storage**: 10GB free disk space (20GB recommended)
+- **RAM**: 4GB minimum (8GB recommended)
+- **Storage**: 5GB free disk space
 - **OS**: Windows 10/11, macOS 10.15+, or Linux (Ubuntu 20.04+)
-- **Docker**: Docker Desktop 4.0+ (with Docker Compose)
+- **Docker**: Docker Desktop 4.0+
 - **Python**: 3.8 or higher
 - **Network**: Internet connection (for Qdrant Cloud API)
-
-**Resource Breakdown:**
-- MySQL Docker Container: ~500MB RAM, 2GB disk
-- Ollama LLM (llama3.2): ~2GB RAM, 4GB disk
-- Python Application: ~200MB RAM
 
 ---
 
