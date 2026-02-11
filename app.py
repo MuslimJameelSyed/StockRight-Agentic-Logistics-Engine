@@ -275,6 +275,14 @@ st.markdown("""
     .stApp { background-color: var(--bg) !important; }
     .main   { background-color: var(--bg) !important; color: var(--text) !important; }
 
+    /* Hide Streamlit header/navbar */
+    header[data-testid="stHeader"] {
+        background-color: var(--bg) !important;
+        visibility: hidden;
+    }
+    #MainMenu { visibility: hidden; }
+    footer { visibility: hidden; }
+
     h1, h2, h3 { color: #ffffff !important; }
 
     .stTextInput > div > div > input {
@@ -282,6 +290,11 @@ st.markdown("""
         color: var(--text) !important;
         border: 1px solid var(--border) !important;
         border-radius: 6px;
+    }
+
+    /* Text input label color (Location code) */
+    .stTextInput > label {
+        color: #ffffff !important;
     }
 
     .stButton > button {
@@ -333,6 +346,7 @@ st.markdown("""
         display: inline-block;
     }
 
+    /* Dark dataframe styling */
     .dataframe {
         background-color: var(--surface) !important;
     }
@@ -342,15 +356,22 @@ st.markdown("""
     }
     .dataframe td {
         color: var(--text) !important;
+        background-color: var(--surface) !important;
+    }
+    [data-testid="stDataFrame"] {
+        background-color: var(--surface) !important;
+    }
+    [data-testid="stDataFrame"] > div {
+        background-color: var(--surface) !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
 st.markdown("""
 <div style="text-align: center; padding: 2.2rem 0 1.4rem;">
-    <h1 style="margin:0; font-size: 2.9rem;">📦 Putaway Recommendation</h1>
+    <h1 style="margin:0; font-size: 2.9rem;">StockRight Agentic Logistics Engine (SALE)</h1>
     <p style="color: #8b949e; font-size: 1.25rem; margin-top: 0.6rem;">
-        Smart Location Assistant
+        Smart Warehouse Assistant
     </p>
 </div>
 """, unsafe_allow_html=True)
@@ -406,7 +427,7 @@ if 'result' in st.session_state and st.session_state.result:
 
             st.markdown(f"""
             <div class="recommendation-box">
-                <h2 style="margin-top:0;">Recommended Location</h2>
+                <h2 style="margin-top:0; color:#ffffff;">Recommended Location</h2>
                 <div style="margin: 1.4rem 0;">
                     <span class="location-highlight">{rec['code']}</span>
                 </div>
@@ -417,11 +438,11 @@ if 'result' in st.session_state and st.session_state.result:
                     </div>
                     <div>
                         <div style="color:#8b949e; font-size:0.95rem;">Historical Uses</div>
-                        <div style="font-size:1.8rem; font-weight:600;">{rec['count']} × / {tot}</div>
+                        <div style="color:#c9d1d9; font-size:1.8rem; font-weight:600;">{rec['count']} × / {tot}</div>
                     </div>
                     <div>
                         <div style="color:#8b949e; font-size:0.95rem;">Usage Rate</div>
-                        <div style="font-size:1.8rem; font-weight:600;">{rec['percentage']:.1f}%</div>
+                        <div style="color:#c9d1d9; font-size:1.8rem; font-weight:600;">{rec['percentage']:.1f}%</div>
                     </div>
                 </div>
             </div>
@@ -429,7 +450,7 @@ if 'result' in st.session_state and st.session_state.result:
 
             st.markdown("### AI Recommendation")
             st.markdown(f"""
-            <div style="background:#161b22; padding:1.4rem; border-radius:8px; border:1px solid #30363d; line-height:1.6;">
+            <div style="background:#161b22; padding:1.4rem; border-radius:8px; border:1px solid #30363d; line-height:1.6; color:#c9d1d9;">
                 {res['ai_summary']}
             </div>
             """, unsafe_allow_html=True)
@@ -439,22 +460,18 @@ if 'result' in st.session_state and st.session_state.result:
                 alt_rows = [
                     {
                         "Rank": f"#{i+1}",
-                        "Location": a["code"],
-                        "Uses": f"{a['count']}×",
-                        "%": f"{a['percentage']:.1f}%"
+                        "Location": a["code"]
                     }
                     for i, a in enumerate(res["alternatives"])
                 ]
                 df_alt = pd.DataFrame(alt_rows)
                 st.dataframe(
                     df_alt,
-                    use_container_width=True,
+                    width="stretch",
                     hide_index=True,
                     column_config={
                         "Rank": "Rank",
-                        "Location": st.column_config.TextColumn("Location", width="medium"),
-                        "Uses": "Times Used",
-                        "%": st.column_config.NumberColumn("Usage %", format="%.1f%%"),
+                        "Location": st.column_config.TextColumn("Location", width="medium")
                     }
                 )
 
