@@ -4,8 +4,11 @@ mysql-connector-python>=8.0.0
 # Vector Database
 qdrant-client>=1.7.0
 
-# Google Gemini AI
+# Google Gemini AI (for cloud version)
 google-generativeai>=0.3.0
+
+# HTTP client (for Ollama API in local version)
+requests>=2.31.0
 
 # Streamlit (for web interface)
 streamlit>=1.28.0

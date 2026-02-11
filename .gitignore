@@ -81,6 +81,10 @@ warehouse_chat_qdrant.py
 warehouse_chat_qdrant_enhanced.py
 putaway_recommendation_system.py
 
+# Alternative project folders (contain their own git repos)
+warehouse-gemini-production/
+warehouse-putaway-system/experiments/
+
 # Setup scripts
 grant_all_access.py
 setup_cloud_sql_access.py

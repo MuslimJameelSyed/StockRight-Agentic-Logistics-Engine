@@ -36,3 +36,10 @@ Thumbs.db
 # Docker volumes
 mysql_data/
 ollama_data/
+
+# Validation outputs (exclude generated files, but keep sample_results)
+experiments/validation_results.csv
+experiments/validation_report.pdf
+experiments/verification_table.csv
+experiments/_charts_tmp/
+!experiments/sample_results/
