@@ -44,17 +44,11 @@ from qdrant_client import QdrantClient
 # CONFIG
 # ============================================================================
 
-QDRANT_URL     = "https://3fe373b5-8102-4a28-ad88-7bcc9220a6de.europe-west3-0.gcp.cloud.qdrant.io"
-QDRANT_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.a75jz8gpzkfzNUCCldMQIpUjOvbsJ9QgIjikxX6Kmjk"
+from config import config
 
-DB_CONFIG = dict(
-    host="35.198.187.177",
-    port=3306,
-    database="mydatabase_gdpr",
-    user="muslim",
-    password="Muslim@123",
-    connection_timeout=15,
-)
+QDRANT_URL     = config.QDRANT_URL
+QDRANT_API_KEY = config.QDRANT_API_KEY
+DB_CONFIG      = config.get_db_config()
 
 SAMPLE_SIZE = 200
 OUTPUT_DIR  = os.path.dirname(os.path.abspath(__file__))
