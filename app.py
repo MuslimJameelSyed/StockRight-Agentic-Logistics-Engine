@@ -253,130 +253,274 @@ def get_recommendation(part_id: int):
             db.close()
 
 st.set_page_config(
-    page_title="StockRight - Smart Warehouse Assistant",
-    page_icon="📦",
+    page_title="StockRight - RAG Putaway System",
+    page_icon="🏭",
     layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
 st.markdown("""
 <style>
-    :root {
-        --bg: #0f1217;
-        --surface: #161b22;
-        --surface-hover: #21262d;
-        --text: #c9d1d9;
-        --text-muted: #8b949e;
-        --border: #30363d;
-        --primary: #58a6ff;
-        --success: #3fb950;
-        --accent: #79c0ff;
+    /* Hide Streamlit branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header[data-testid="stHeader"] {visibility: hidden;}
+
+    /* Main container */
+    .main .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        max-width: 1400px;
     }
 
-    .stApp { background-color: var(--bg) !important; }
-    .main   { background-color: var(--bg) !important; color: var(--text) !important; }
-
-    /* Hide Streamlit header/navbar */
-    header[data-testid="stHeader"] {
-        background-color: var(--bg) !important;
-        visibility: hidden;
-    }
-    #MainMenu { visibility: hidden; }
-    footer { visibility: hidden; }
-
-    h1, h2, h3 { color: #ffffff !important; }
-
-    .stTextInput > div > div > input {
-        background-color: var(--surface) !important;
-        color: var(--text) !important;
-        border: 1px solid var(--border) !important;
-        border-radius: 6px;
+    /* Header */
+    .main-header {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        padding: 2rem 2.5rem;
+        border-radius: 12px;
+        color: white;
+        text-align: center;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
     }
 
-    /* Text input label color (Location code) */
-    .stTextInput > label {
-        color: #ffffff !important;
+    .main-header h1 {
+        margin: 0;
+        font-size: 2.5rem;
+        font-weight: 700;
+        letter-spacing: -0.5px;
     }
 
+    .main-header p {
+        margin: 0.5rem 0 0 0;
+        font-size: 1.1rem;
+        opacity: 0.95;
+    }
+
+    .status-badge {
+        display: inline-block;
+        background: rgba(255,255,255,0.2);
+        padding: 0.3rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        margin-top: 0.8rem;
+    }
+
+    /* Cards */
+    .card {
+        background: #ffffff;
+        padding: 1.8rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e8e8e8;
+        height: 100%;
+        margin-bottom: 1rem;
+    }
+
+    .card-header {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #1e3c72;
+        margin-bottom: 1.2rem;
+        padding-bottom: 0.8rem;
+        border-bottom: 2px solid #1e3c72;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Location Display */
+    .location-display {
+        background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        text-align: center;
+        margin: 1.5rem 0;
+        box-shadow: 0 6px 20px rgba(0, 176, 155, 0.3);
+    }
+
+    .location-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .location-code {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin: 0.5rem 0;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        font-family: 'Courier New', monospace;
+    }
+
+    .location-status {
+        font-size: 1.2rem;
+        opacity: 0.95;
+        font-weight: 600;
+    }
+
+    /* Badges */
+    .badge {
+        display: inline-block;
+        padding: 0.5rem 1.2rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        margin: 0.3rem;
+    }
+
+    .badge-high { background: #d4edda; color: #155724; }
+    .badge-medium { background: #fff3cd; color: #856404; }
+    .badge-low { background: #f8d7da; color: #721c24; }
+    .badge-info { background: #1e3c72; color: white; }
+
+    /* Stats Box */
+    .stats-box {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 1.2rem;
+        border-radius: 10px;
+        border-left: 4px solid #1e3c72;
+        margin: 1rem 0;
+    }
+
+    .stats-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .stats-row:last-child { border-bottom: none; }
+    .stats-label { font-weight: 600; color: #495057; }
+    .stats-value { color: #212529; }
+
+    /* AI Reasoning Box */
+    .ai-reasoning {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        padding: 1.5rem;
+        border-radius: 10px;
+        border-left: 4px solid #2196f3;
+        margin: 1rem 0;
+        font-size: 0.95rem;
+        line-height: 1.7;
+        color: #1565c0;
+    }
+
+    /* Alternative Locations */
+    .alt-location {
+        background: #f8f9fa;
+        padding: 0.8rem 1rem;
+        margin: 0.5rem 0;
+        border-radius: 8px;
+        border-left: 3px solid #6c757d;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .alt-location:hover {
+        background: #e9ecef;
+        transform: translateX(5px);
+        transition: all 0.2s ease;
+    }
+
+    /* Buttons */
     .stButton > button {
-        background-color: #4b5563 !important;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
         color: white !important;
         border: none !important;
-        border-radius: 6px;
+        padding: 0.75rem 2rem !important;
+        font-size: 1rem !important;
+        font-weight: 600 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 12px rgba(30, 60, 114, 0.3) !important;
+        transition: all 0.3s ease !important;
+        width: 100% !important;
     }
+
     .stButton > button:hover {
-        background-color: #374151 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(30, 60, 114, 0.4) !important;
     }
 
+    /* Metrics */
     [data-testid="stMetric"] {
-        background-color: var(--surface) !important;
-        border: 1px solid var(--border) !important;
-        border-radius: 8px;
-        padding: 12px;
-    }
-    [data-testid="stMetricLabel"] { color: var(--text-muted) !important; }
-    [data-testid="stMetricValue"] { color: #ffffff !important; font-size: 1.9rem !important; }
-
-    hr { border-color: var(--border) !important; }
-
-    .stAlert, .stInfo, .stWarning, .stSuccess {
-        background-color: var(--surface) !important;
-        border: 1px solid var(--border) !important;
-        color: var(--text) !important;
-        border-radius: 8px;
+        background-color: #f8f9fa !important;
+        border: 1px solid #dee2e6 !important;
+        border-radius: 8px !important;
+        padding: 1rem !important;
     }
 
-    .recommendation-box {
-        background: linear-gradient(145deg, #1a2338, #0f172a);
-        border-left: 5px solid var(--success);
-        padding: 1.8rem;
-        border-radius: 8px;
-        margin: 1.5rem 0;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+    [data-testid="stMetricLabel"] {
+        color: #6c757d !important;
+        font-weight: 600 !important;
     }
 
-    .location-highlight {
-        font-family: 'Courier New', monospace;
-        font-size: 2.6rem;
-        font-weight: bold;
-        color: var(--accent);
-        background: #0d1117;
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        border: 1px solid var(--border);
-        display: inline-block;
+    [data-testid="stMetricValue"] {
+        color: #212529 !important;
+        font-size: 1.8rem !important;
+        font-weight: 700 !important;
     }
 
-    /* Dark dataframe styling */
+    /* Input fields */
+    .stTextInput > div > div > input {
+        border: 2px solid #dee2e6 !important;
+        border-radius: 8px !important;
+        padding: 0.75rem !important;
+        font-size: 1rem !important;
+    }
+
+    .stTextInput > div > div > input:focus {
+        border-color: #1e3c72 !important;
+        box-shadow: 0 0 0 0.2rem rgba(30, 60, 114, 0.25) !important;
+    }
+
+    .stTextInput > label {
+        font-weight: 600 !important;
+        color: #495057 !important;
+    }
+
+    /* Dataframe */
     .dataframe {
-        background-color: var(--surface) !important;
+        border: none !important;
     }
+
     .dataframe th {
-        background-color: #21262d !important;
+        background-color: #1e3c72 !important;
         color: white !important;
+        font-weight: 600 !important;
+        padding: 0.75rem !important;
     }
+
     .dataframe td {
-        color: var(--text) !important;
-        background-color: var(--surface) !important;
+        padding: 0.75rem !important;
+        border-bottom: 1px solid #dee2e6 !important;
     }
-    [data-testid="stDataFrame"] {
-        background-color: var(--surface) !important;
-    }
-    [data-testid="stDataFrame"] > div {
-        background-color: var(--surface) !important;
+
+    /* Divider */
+    hr {
+        margin: 2rem 0 !important;
+        border-color: #dee2e6 !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
 st.markdown("""
-<div style="text-align: center; padding: 2.2rem 0 1.4rem;">
-    <h1 style="margin:0; font-size: 2.9rem;">StockRight Agentic Logistics Engine (SALE)</h1>
-    <p style="color: #8b949e; font-size: 1.25rem; margin-top: 0.6rem;">
-        Smart Warehouse Assistant
-    </p>
+<div class="main-header">
+    <h1>🏭 STOCKRIGHT RAG PUTAWAY SYSTEM</h1>
+    <p>Real-time intelligent location recommendations powered by RAG architecture</p>
+    <div class="status-badge">🤖 Qdrant • Cloud SQL • Gemini AI</div>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("### Enter Part ID")
+st.markdown("""
+<div class="card">
+    <div class="card-header">📦 Part Lookup</div>
+</div>
+""", unsafe_allow_html=True)
+
 c1, c2 = st.columns([5, 2])
 
 with c1:
@@ -388,10 +532,11 @@ with c1:
     )
 
 with c2:
-    if st.button("Search", type="primary", use_container_width=True):
+    st.markdown("<div style='margin-top: 1.6rem;'></div>", unsafe_allow_html=True)
+    if st.button("🚀 GET RECOMMENDATION", type="primary", use_container_width=True):
         try:
             pid = int(part_id_str.strip())
-            with st.spinner("Generating recommendation..."):
+            with st.spinner("🔄 Analyzing historical patterns via RAG..."):
                 st.session_state.result = get_recommendation(pid)
                 st.session_state.current_part_id = pid
         except ValueError:
@@ -406,7 +551,13 @@ if 'result' in st.session_state and st.session_state.result:
     if "error" in res:
         st.error(res["error"])
     else:
-        st.markdown("### Part Details")
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("""
+        <div class="card">
+            <div class="card-header">📋 Part Details</div>
+        </div>
+        """, unsafe_allow_html=True)
+
         cols = st.columns(4)
         cols[0].metric("Part ID", f"#{res['part_id']}")
         cols[1].metric("Code", res["part_code"])
@@ -416,68 +567,92 @@ if 'result' in st.session_state and st.session_state.result:
         st.divider()
 
         if res["status"] == "no_history":
-            st.warning("No historical putaway data available.")
+            st.warning("⚠️ No historical putaway data available.")
             st.info(res["ai_summary"])
         elif res["status"] == "all_occupied":
-            st.warning("All historical locations currently occupied.")
+            st.warning("⚠️ All historical locations currently occupied.")
             st.info(res["ai_summary"])
         else:
             rec = res["recommended"]
             tot = res["total_putaways"]
 
+            # Main Recommendation Card
             st.markdown(f"""
-            <div class="recommendation-box">
-                <h2 style="margin-top:0; color:#ffffff;">Recommended Location</h2>
-                <div style="margin: 1.4rem 0;">
-                    <span class="location-highlight">{rec['code']}</span>
+            <div class="location-display">
+                <div class="location-label">✨ Recommended Location</div>
+                <div class="location-code">{rec['code']}</div>
+                <div class="location-status">🟢 FREE & READY FOR USE</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # Stats Box
+            st.markdown(f"""
+            <div class="stats-box">
+                <div class="stats-row">
+                    <span class="stats-label">📊 Historical Uses</span>
+                    <span class="stats-value">{rec['count']} times (out of {tot} total)</span>
                 </div>
-                <div style="display:flex; gap:2.5rem; flex-wrap:wrap; margin:1.6rem 0;">
-                    <div>
-                        <div style="color:#8b949e; font-size:0.95rem;">Status</div>
-                        <div style="color:#3fb950; font-size:1.8rem; font-weight:600;">FREE</div>
-                    </div>
-                    <div>
-                        <div style="color:#8b949e; font-size:0.95rem;">Historical Uses</div>
-                        <div style="color:#c9d1d9; font-size:1.8rem; font-weight:600;">{rec['count']} × / {tot}</div>
-                    </div>
-                    <div>
-                        <div style="color:#8b949e; font-size:0.95rem;">Usage Rate</div>
-                        <div style="color:#c9d1d9; font-size:1.8rem; font-weight:600;">{rec['percentage']:.1f}%</div>
-                    </div>
+                <div class="stats-row">
+                    <span class="stats-label">📈 Usage Rate</span>
+                    <span class="stats-value">{rec['percentage']:.1f}%</span>
+                </div>
+                <div class="stats-row">
+                    <span class="stats-label">✅ Status</span>
+                    <span class="stats-value" style="color: #28a745; font-weight: 700;">FREE</span>
                 </div>
             </div>
             """, unsafe_allow_html=True)
 
-            st.markdown("### AI Recommendation")
+            # AI Reasoning
+            st.markdown("""
+            <div class="card">
+                <div class="card-header">🤖 AI-Generated Reasoning</div>
+            </div>
+            """, unsafe_allow_html=True)
+
             st.markdown(f"""
-            <div style="background:#161b22; padding:1.4rem; border-radius:8px; border:1px solid #30363d; line-height:1.6; color:#c9d1d9;">
+            <div class="ai-reasoning">
+                <strong>🧠 Gemini AI Analysis:</strong><br><br>
                 {res['ai_summary']}
             </div>
             """, unsafe_allow_html=True)
 
+            # Confidence Badge
+            confidence_level = "HIGH" if rec['percentage'] >= 30 else "MEDIUM" if rec['percentage'] >= 15 else "LOW"
+            badge_class = "badge-high" if rec['percentage'] >= 30 else "badge-medium" if rec['percentage'] >= 15 else "badge-low"
+            st.markdown(f"""
+            <div style="text-align: center; margin: 1rem 0;">
+                <span class="badge {badge_class}">⚡ {confidence_level} CONFIDENCE</span>
+                <span class="badge badge-info">🔄 RAG Pipeline</span>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # Alternative Locations
             if res["alternatives"]:
-                st.markdown("### Alternative Free Locations")
-                alt_rows = [
-                    {
-                        "Rank": f"#{i+1}",
-                        "Location": a["code"]
-                    }
-                    for i, a in enumerate(res["alternatives"])
-                ]
-                df_alt = pd.DataFrame(alt_rows)
-                st.dataframe(
-                    df_alt,
-                    width="stretch",
-                    hide_index=True,
-                    column_config={
-                        "Rank": "Rank",
-                        "Location": st.column_config.TextColumn("Location", width="medium")
-                    }
-                )
+                st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown("""
+                <div class="card">
+                    <div class="card-header">🔄 Alternative Free Locations</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+                for i, alt in enumerate(res["alternatives"]):
+                    st.markdown(f"""
+                    <div class="alt-location">
+                        <span><strong>#{i+2}</strong> - {alt['code']}</span>
+                        <span style="color: #6c757d;">Used {alt['count']}× ({alt['percentage']:.1f}%)</span>
+                    </div>
+                    """, unsafe_allow_html=True)
 
             st.divider()
 
-            st.subheader("Human-in-the-Loop")
+            # Human Override Section
+            st.markdown("""
+            <div class="card">
+                <div class="card-header">👤 Human-in-the-Loop Confirmation</div>
+            </div>
+            """, unsafe_allow_html=True)
+
             c1, c2 = st.columns([3, 2])
             with c1:
                 loc_input = st.text_input(
@@ -489,12 +664,13 @@ if 'result' in st.session_state and st.session_state.result:
                 )
             with c2:
                 st.markdown("<div style='margin-top: 1.85rem;'></div>", unsafe_allow_html=True)
-                if st.button("Confirm Putaway Location", type="primary", use_container_width=True):
+                if st.button("✓ CONFIRM PUTAWAY", type="primary", use_container_width=True):
                     chosen = (loc_input or "").strip().upper()
                     if not chosen:
                         st.warning("Please enter a location code.")
                     elif chosen == rec["code"]:
-                        st.success(f"**{chosen}** confirmed (recommended location) ✓")
+                        st.success(f"✅ **{chosen}** confirmed (recommended location)")
+                        st.balloons()
                     else:
                         audit_logger.log_override(
                             part_id=res["part_id"],
@@ -503,5 +679,5 @@ if 'result' in st.session_state and st.session_state.result:
                             actual_location=chosen,
                             reason="Manual override by user"
                         )
-                        st.success(f"**{chosen}** confirmed (override)")
-                        st.info("Override logged for audit.")
+                        st.success(f"✅ **{chosen}** confirmed (override)")
+                        st.info("📝 Override logged for audit and pattern learning.")
