@@ -2,6 +2,14 @@
 
 🏭 **Production-Ready** API-based warehouse putaway system using Cloud SQL, Qdrant Vector DB, and Google Gemini AI.
 
+## 🌐 Live Demo
+
+**Try it now:** [https://stockright.streamlit.app/](https://stockright.streamlit.app/)
+
+Experience the system live with real warehouse data and AI-powered recommendations.
+
+---
+
 ## System Overview
 
 This API-based system recommends optimal storage locations for incoming warehouse inventory using **RAG (Retrieval-Augmented Generation)** architecture:
