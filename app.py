@@ -477,7 +477,7 @@ if 'result' in st.session_state and st.session_state.result:
 
             st.divider()
 
-            st.subheader("Manual Override")
+            st.subheader("Human-in-the-Loop")
             c1, c2 = st.columns([3, 2])
             with c1:
                 loc_input = st.text_input(
