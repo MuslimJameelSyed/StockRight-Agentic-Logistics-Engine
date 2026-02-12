@@ -261,13 +261,13 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-    /* Force black background */
+    /* Dark grey background */
     .stApp {
-        background-color: #000000 !important;
+        background-color: #121212 !important;
     }
 
     .main {
-        background-color: #000000 !important;
+        background-color: #121212 !important;
     }
 
     /* Hide Streamlit branding */
@@ -280,7 +280,7 @@ st.markdown("""
         padding-top: 2rem;
         padding-bottom: 2rem;
         max-width: 1400px;
-        background-color: #000000 !important;
+        background-color: #121212 !important;
     }
 
     /* Header */
@@ -316,38 +316,17 @@ st.markdown("""
         margin-top: 0.8rem;
     }
 
-    /* Cards */
-    .card {
-        background: #ffffff;
-        padding: 1.8rem;
-        border-radius: 12px;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-        border: 1px solid #e8e8e8;
-        height: 100%;
-        margin-bottom: 1rem;
-    }
-
-    .card-header {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #1e3c72;
-        margin-bottom: 1.2rem;
-        padding-bottom: 0.8rem;
-        border-bottom: 2px solid #1e3c72;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
+    /* Remove all card styling */
 
     /* Location Display */
     .location-display {
-        background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
         color: white;
         padding: 2rem;
         border-radius: 12px;
         text-align: center;
         margin: 1.5rem 0;
-        box-shadow: 0 6px 20px rgba(0, 176, 155, 0.3);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
     }
 
     .location-label {
@@ -388,10 +367,10 @@ st.markdown("""
 
     /* Stats Box */
     .stats-box {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        background: #1a1f2e;
         padding: 1.2rem;
         border-radius: 10px;
-        border-left: 4px solid #1e3c72;
+        border-left: 4px solid #58a6ff;
         margin: 1rem 0;
     }
 
@@ -399,39 +378,44 @@ st.markdown("""
         display: flex;
         justify-content: space-between;
         padding: 0.5rem 0;
-        border-bottom: 1px solid #dee2e6;
+        border-bottom: 1px solid #30363d;
     }
 
     .stats-row:last-child { border-bottom: none; }
-    .stats-label { font-weight: 600; color: #495057; }
-    .stats-value { color: #212529; }
+    .stats-label { font-weight: 600; color: #8b949e; }
+    .stats-value { color: #ffffff; }
 
     /* AI Reasoning Box */
     .ai-reasoning {
-        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        background: #1a1f2e;
         padding: 1.5rem;
         border-radius: 10px;
-        border-left: 4px solid #2196f3;
-        margin: 1rem 0;
-        font-size: 0.95rem;
+        border-left: 4px solid #58a6ff;
+        margin: 0 0 1rem 0;
+        font-size: 1rem;
         line-height: 1.7;
-        color: #1565c0;
+        color: #c9d1d9;
     }
 
     /* Alternative Locations */
     .alt-location {
-        background: #f8f9fa;
+        background: #161b22;
         padding: 0.8rem 1rem;
-        margin: 0.5rem 0;
+        margin: 0.3rem 0;
         border-radius: 8px;
-        border-left: 3px solid #6c757d;
+        border-left: 3px solid #58a6ff;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        color: #c9d1d9;
+    }
+
+    .alt-location:first-child {
+        margin-top: 0;
     }
 
     .alt-location:hover {
-        background: #e9ecef;
+        background: #21262d;
         transform: translateX(5px);
         transition: all 0.2s ease;
     }
@@ -457,48 +441,51 @@ st.markdown("""
 
     /* Metrics */
     [data-testid="stMetric"] {
-        background-color: #f8f9fa !important;
-        border: 1px solid #dee2e6 !important;
+        background-color: #161b22 !important;
+        border: 1px solid #30363d !important;
         border-radius: 8px !important;
         padding: 1rem !important;
     }
 
     [data-testid="stMetricLabel"] {
-        color: #6c757d !important;
+        color: #8b949e !important;
         font-weight: 600 !important;
     }
 
     [data-testid="stMetricValue"] {
-        color: #212529 !important;
+        color: #ffffff !important;
         font-size: 1.8rem !important;
         font-weight: 700 !important;
     }
 
     /* Input fields */
     .stTextInput > div > div > input {
-        border: 2px solid #dee2e6 !important;
-        border-radius: 8px !important;
+        background-color: #161b22 !important;
+        color: #c9d1d9 !important;
+        border: 1px solid #30363d !important;
+        border-radius: 6px !important;
         padding: 0.75rem !important;
         font-size: 1rem !important;
     }
 
     .stTextInput > div > div > input:focus {
-        border-color: #1e3c72 !important;
-        box-shadow: 0 0 0 0.2rem rgba(30, 60, 114, 0.25) !important;
+        border-color: #58a6ff !important;
+        box-shadow: 0 0 0 0.2rem rgba(88, 166, 255, 0.25) !important;
     }
 
     .stTextInput > label {
         font-weight: 600 !important;
-        color: #495057 !important;
+        color: #ffffff !important;
     }
 
     /* Dataframe */
     .dataframe {
         border: none !important;
+        background-color: #161b22 !important;
     }
 
     .dataframe th {
-        background-color: #1e3c72 !important;
+        background-color: #21262d !important;
         color: white !important;
         font-weight: 600 !important;
         padding: 0.75rem !important;
@@ -506,7 +493,13 @@ st.markdown("""
 
     .dataframe td {
         padding: 0.75rem !important;
-        border-bottom: 1px solid #dee2e6 !important;
+        border-bottom: 1px solid #30363d !important;
+        background-color: #161b22 !important;
+        color: #c9d1d9 !important;
+    }
+
+    [data-testid="stDataFrame"] {
+        background-color: #161b22 !important;
     }
 
     /* Divider */
@@ -514,23 +507,34 @@ st.markdown("""
         margin: 2rem 0 !important;
         border-color: #dee2e6 !important;
     }
+
+    /* Headings on black background */
+    h1, h2, h3 {
+        color: #ffffff !important;
+    }
+
+    h3 {
+        font-size: 1.5rem !important;
+        font-weight: 700 !important;
+        margin-bottom: 0.5rem !important;
+        margin-top: 1.5rem !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 st.markdown("""
-<div class="main-header">
-    <h1>🏭 STOCKRIGHT RAG PUTAWAY SYSTEM</h1>
-    <p>Real-time intelligent location recommendations powered by RAG architecture</p>
-    <div class="status-badge">🤖 Qdrant • Cloud SQL • Gemini AI</div>
+<div style="text-align: center; padding: 2.5rem 2rem; background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #06b6d4 100%); border-radius: 16px; margin-bottom: 2rem; box-shadow: 0 8px 32px rgba(59, 130, 246, 0.4); border: 1px solid rgba(255,255,255,0.1);">
+    <div style="font-size: 4rem; margin-bottom: 0.5rem;">🏭</div>
+    <h1 style="margin:0; font-size: 3rem; font-weight: 800; color: #ffffff; letter-spacing: -1px;">
+        StockRight Agentic Logistics Engine (SALE)
+    </h1>
+    <p style="color: rgba(255,255,255,0.95); font-size: 1.2rem; margin-top: 0.8rem; font-weight: 500;">
+        Smart Warehouse Assistant
+    </p>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("""
-<div class="card">
-    <div class="card-header">📦 Part Lookup</div>
-</div>
-""", unsafe_allow_html=True)
-
+st.markdown("### Enter Part ID")
 c1, c2 = st.columns([5, 2])
 
 with c1:
@@ -542,11 +546,10 @@ with c1:
     )
 
 with c2:
-    st.markdown("<div style='margin-top: 1.6rem;'></div>", unsafe_allow_html=True)
     if st.button("🚀 GET RECOMMENDATION", type="primary", use_container_width=True):
         try:
             pid = int(part_id_str.strip())
-            with st.spinner("🔄 Analyzing historical patterns via RAG..."):
+            with st.spinner("Generating recommendation..."):
                 st.session_state.result = get_recommendation(pid)
                 st.session_state.current_part_id = pid
         except ValueError:
@@ -561,13 +564,7 @@ if 'result' in st.session_state and st.session_state.result:
     if "error" in res:
         st.error(res["error"])
     else:
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown("""
-        <div class="card">
-            <div class="card-header">📋 Part Details</div>
-        </div>
-        """, unsafe_allow_html=True)
-
+        st.markdown("### Part Details")
         cols = st.columns(4)
         cols[0].metric("Part ID", f"#{res['part_id']}")
         cols[1].metric("Code", res["part_code"])
@@ -613,44 +610,35 @@ if 'result' in st.session_state and st.session_state.result:
             </div>
             """, unsafe_allow_html=True)
 
-            # AI Reasoning
+            # AI Summary
             st.markdown("""
-            <div class="card">
-                <div class="card-header">🤖 AI-Generated Reasoning</div>
+            <div style="margin-top: 2rem;">
+                <h2 style="font-size: 1.8rem; font-weight: 800; color: #58a6ff; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 2rem;">🤖</span> AI Summary
+                </h2>
             </div>
             """, unsafe_allow_html=True)
-
             st.markdown(f"""
             <div class="ai-reasoning">
-                <strong>🧠 Gemini AI Analysis:</strong><br><br>
                 {res['ai_summary']}
             </div>
             """, unsafe_allow_html=True)
 
-            # Confidence Badge
-            confidence_level = "HIGH" if rec['percentage'] >= 30 else "MEDIUM" if rec['percentage'] >= 15 else "LOW"
-            badge_class = "badge-high" if rec['percentage'] >= 30 else "badge-medium" if rec['percentage'] >= 15 else "badge-low"
-            st.markdown(f"""
-            <div style="text-align: center; margin: 1rem 0;">
-                <span class="badge {badge_class}">⚡ {confidence_level} CONFIDENCE</span>
-                <span class="badge badge-info">🔄 RAG Pipeline</span>
-            </div>
-            """, unsafe_allow_html=True)
 
             # Alternative Locations
             if res["alternatives"]:
-                st.markdown("<br>", unsafe_allow_html=True)
                 st.markdown("""
-                <div class="card">
-                    <div class="card-header">🔄 Alternative Free Locations</div>
+                <div style="margin-top: 2rem;">
+                    <h2 style="font-size: 1.8rem; font-weight: 800; color: #58a6ff; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 2rem;">📍</span> Alternative Free Locations
+                    </h2>
                 </div>
                 """, unsafe_allow_html=True)
-
                 for i, alt in enumerate(res["alternatives"]):
                     st.markdown(f"""
                     <div class="alt-location">
-                        <span><strong>#{i+2}</strong> - {alt['code']}</span>
-                        <span style="color: #6c757d;">Used {alt['count']}× ({alt['percentage']:.1f}%)</span>
+                        <span style="color: #ffffff;"><strong>#{i+2}</strong> - {alt['code']}</span>
+                        <span style="color: #8b949e;">Used {alt['count']}× ({alt['percentage']:.1f}%)</span>
                     </div>
                     """, unsafe_allow_html=True)
 
@@ -658,11 +646,12 @@ if 'result' in st.session_state and st.session_state.result:
 
             # Human Override Section
             st.markdown("""
-            <div class="card">
-                <div class="card-header">👤 Human-in-the-Loop Confirmation</div>
+            <div style="margin-top: 2rem; margin-bottom: 1rem;">
+                <h2 style="font-size: 1.8rem; font-weight: 800; color: #58a6ff; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 2rem;">👤</span> Human-in-the-Loop
+                </h2>
             </div>
             """, unsafe_allow_html=True)
-
             c1, c2 = st.columns([3, 2])
             with c1:
                 loc_input = st.text_input(
@@ -673,14 +662,13 @@ if 'result' in st.session_state and st.session_state.result:
                     label_visibility="visible"
                 )
             with c2:
-                st.markdown("<div style='margin-top: 1.85rem;'></div>", unsafe_allow_html=True)
+                st.markdown("<div style='margin-top: 1.7rem;'></div>", unsafe_allow_html=True)
                 if st.button("✓ CONFIRM PUTAWAY", type="primary", use_container_width=True):
                     chosen = (loc_input or "").strip().upper()
                     if not chosen:
                         st.warning("Please enter a location code.")
                     elif chosen == rec["code"]:
                         st.success(f"✅ **{chosen}** confirmed (recommended location)")
-                        st.balloons()
                     else:
                         audit_logger.log_override(
                             part_id=res["part_id"],
