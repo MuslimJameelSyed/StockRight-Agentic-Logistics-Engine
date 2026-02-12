@@ -261,6 +261,15 @@ st.set_page_config(
 
 st.markdown("""
 <style>
+    /* Force black background */
+    .stApp {
+        background-color: #000000 !important;
+    }
+
+    .main {
+        background-color: #000000 !important;
+    }
+
     /* Hide Streamlit branding */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
@@ -271,6 +280,7 @@ st.markdown("""
         padding-top: 2rem;
         padding-bottom: 2rem;
         max-width: 1400px;
+        background-color: #000000 !important;
     }
 
     /* Header */
