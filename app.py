@@ -253,7 +253,7 @@ def get_recommendation(part_id: int):
             db.close()
 
 st.set_page_config(
-    page_title="Putaway Recommendation",
+    page_title="StockRight - Smart Warehouse Assistant",
     page_icon="📦",
     layout="wide",
 )
