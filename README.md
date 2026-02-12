@@ -4,10 +4,10 @@
 
 ## System Overview
 
-This API-based system recommends optimal storage locations for incoming warehouse inventory using:
-- **Qdrant Cloud API** - Vector database for historical putaway patterns
-- **Google Cloud SQL API** - Real-time location availability via MySQL
-- **Google Gemini API** - AI-powered natural language explanations
+This API-based system recommends optimal storage locations for incoming warehouse inventory using **RAG (Retrieval-Augmented Generation)** architecture:
+- **Qdrant Cloud API** - Vector database for historical putaway patterns (Retrieval)
+- **Google Cloud SQL API** - Real-time location availability via MySQL (Augmentation)
+- **Google Gemini API** - AI-powered natural language explanations (Generation)
 
 ## Core Applications
 
@@ -25,9 +25,9 @@ Terminal-based recommendations with interactive mode.
 
 ## How It Works
 
-**Three-Step Process:**
+**RAG-Powered Three-Step Process:**
 1. **Retrieval:** Query historical patterns from Qdrant vector database
-2. **Validation:** Check real-time location availability in Cloud SQL
+2. **Augmentation:** Check real-time location availability in Cloud SQL
 3. **Generation:** AI-powered explanation using Google Gemini
 
 **Recommendation Strategy:**
@@ -166,5 +166,3 @@ All system events are logged to `logs/audit.log` in JSON format:
    ```bash
    tail -f logs/audit.log
    ```
-
----
